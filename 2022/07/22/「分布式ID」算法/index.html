@@ -24,7 +24,7 @@
 <meta property="og:description" content="前言 全局唯一ID，用于唯一标识一个实体（用户、产品等）。在传统的单机架构下，一种常用的做法是使用数据库自增ID来作为主键，唯一标识一个实体。但是在分布式架构下，虽然可以设置自增起始值和自增步长来实现但是受限于业务规模，难以扩展，且受限于DB性能瓶颈。 现有的分布式全局唯一ID可大致分为如下三类：  UUID 基于DB 基于雪花ID(Snowflake)方案   需满足的条件  全局唯一：必须保">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-07-22T10:58:39.000Z">
-<meta property="article:modified_time" content="2022-07-22T12:19:52.444Z">
+<meta property="article:modified_time" content="2022-07-22T12:35:15.974Z">
 <meta property="article:author" content="bro_wangzai">
 <meta property="article:tag" content="分布式ID">
 <meta name="twitter:card" content="summary_large_image">
@@ -449,9 +449,9 @@ auto_increment_increment<span class="token operator">=</span><span class="token 
 </ul>
 <h2 id="实战应用"><a class="markdownIt-Anchor" href="#实战应用"></a> 实战应用</h2>
 <p>在之前神州信息分布式赛道中，我跟刘哥使用了雪花ID作为分布式ID方案。赛题给定的主键字段是20位字符型，由于设计之初考虑到了单表容量过大的问题，采用了分库分表策略，将2位库标识+4位表标识设计到ID前六位，还剩下14位可用。因此，我们提出了一种基于雪花算法的分布式ID方案。</p>
-<h2 id="id设计"><a class="markdownIt-Anchor" href="#id设计"></a> ID设计</h2>
+<h3 id="id设计"><a class="markdownIt-Anchor" href="#id设计"></a> ID设计</h3>
 <p>2位库标识+4位表标识+14位IceFlake ID</p>
-<h2 id="基于snowflake的iceflake-id设计"><a class="markdownIt-Anchor" href="#基于snowflake的iceflake-id设计"></a> 基于SnowFlake的IceFlake ID设计</h2>
+<h3 id="基于snowflake的iceflake-id设计"><a class="markdownIt-Anchor" href="#基于snowflake的iceflake-id设计"></a> 基于SnowFlake的IceFlake ID设计</h3>
 <ul>
 <li>64位long类型存储</li>
 <li>低6位：序列号，可标识2^6=64个id</li>
