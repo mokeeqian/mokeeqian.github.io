@@ -24,7 +24,7 @@
 <meta property="og:description" content="前言 全局唯一ID，用于唯一标识一个实体（用户、产品等）。在传统的单机架构下，一种常用的做法是使用数据库自增ID来作为主键，唯一标识一个实体。但是在分布式架构下，虽然可以设置自增起始值和自增步长来实现但是受限于业务规模，难以扩展，且受限于DB性能瓶颈。 现有的分布式全局唯一ID可大致分为如下三类：  UUID 基于DB 基于雪花ID(Snowflake)方案   需满足的条件  全局唯一：必须保">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-07-22T10:58:39.000Z">
-<meta property="article:modified_time" content="2022-07-22T12:35:15.974Z">
+<meta property="article:modified_time" content="2022-07-22T13:29:32.815Z">
 <meta property="article:author" content="bro_wangzai">
 <meta property="article:tag" content="分布式ID">
 <meta name="twitter:card" content="summary_large_image">
@@ -461,72 +461,70 @@ auto_increment_increment<span class="token operator">=</span><span class="token 
 </ul>
 <p>最后，截取低52位，转为14位16进制比特位字符串（高位填充1个“0”），组成14位 Iceflake id</p>
 <p>代码实现：</p>
-<div class="code-wrapper"><pre class="highlight"><code class="java"><span class="hljs-meta">@Component</span>
-<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SnowFlakeIdUtils</span> </span>&#123;
+<div class="code-wrapper"><pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@Component</span>
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">SnowFlakeIdUtils</span> <span class="token punctuation">&#123;</span>
 
-    <span class="hljs-comment">// 2015-01-01</span>
-    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> START_DATE = <span class="hljs-number">1420041600000L</span>;
-    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> NUM_WORKER_ID_BITS = <span class="hljs-number">4L</span>;
-    <span class="hljs-comment">// 序列号位数：6， 一个毫秒单位内可单个实例承受并发64个ID</span>
-    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> NUM_SEQUENCE_ID_BITS = <span class="hljs-number">6L</span>;
+    <span class="token comment">// 2015-01-01</span>
+    <span class="token keyword">private</span> <span class="token keyword">final</span> <span class="token keyword">long</span> START_DATE <span class="token operator">=</span> <span class="token number">1420041600000L</span><span class="token punctuation">;</span>
+    <span class="token keyword">private</span> <span class="token keyword">final</span> <span class="token keyword">long</span> NUM_WORKER_ID_BITS <span class="token operator">=</span> <span class="token number">4L</span><span class="token punctuation">;</span>
+    <span class="token comment">// 序列号位数：6， 一个毫秒单位内可单个实例承受并发64个ID</span>
+    <span class="token keyword">private</span> <span class="token keyword">final</span> <span class="token keyword">long</span> NUM_SEQUENCE_ID_BITS <span class="token operator">=</span> <span class="token number">6L</span><span class="token punctuation">;</span>
 
-    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> NUM_WORKER_ID_SHIFTS = NUM_SEQUENCE_ID_BITS;
-    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> NUM_TIMESTAMP_ID_SHIFTS = NUM_SEQUENCE_ID_BITS + NUM_WORKER_ID_BITS;
-    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> SEQUENCE_MASK = ~(-<span class="hljs-number">1L</span> &lt;&lt; NUM_SEQUENCE_ID_BITS);
+    <span class="token keyword">private</span> <span class="token keyword">final</span> <span class="token keyword">long</span> NUM_WORKER_ID_SHIFTS <span class="token operator">=</span> NUM_SEQUENCE_ID_BITS<span class="token punctuation">;</span>
+    <span class="token keyword">private</span> <span class="token keyword">final</span> <span class="token keyword">long</span> NUM_TIMESTAMP_ID_SHIFTS <span class="token operator">=</span> NUM_SEQUENCE_ID_BITS <span class="token operator">+</span> NUM_WORKER_ID_BITS<span class="token punctuation">;</span>
+    <span class="token keyword">private</span> <span class="token keyword">final</span> <span class="token keyword">long</span> SEQUENCE_MASK <span class="token operator">=</span> <span class="token operator">~</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1L</span> <span class="token operator">&lt;&lt;</span> NUM_SEQUENCE_ID_BITS<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-    <span class="hljs-comment">// 集群部署，配置worker-id</span>
-    <span class="hljs-meta">@Value</span>(<span class="hljs-string">"$&#123;worker-id&#125;"</span>)
-    <span class="hljs-keyword">private</span> <span class="hljs-keyword">long</span> workerId;
-    <span class="hljs-keyword">private</span> <span class="hljs-keyword">long</span> sequenceId=<span class="hljs-number">0L</span>;
-    <span class="hljs-keyword">private</span> <span class="hljs-keyword">long</span> lastTimestamp=-<span class="hljs-number">1L</span>;
+    <span class="token comment">// 集群部署，配置worker-id</span>
+    <span class="token annotation punctuation">@Value</span><span class="token punctuation">(</span><span class="token string">"$&#123;worker-id&#125;"</span><span class="token punctuation">)</span>
+    <span class="token keyword">private</span> <span class="token keyword">long</span> workerId<span class="token punctuation">;</span>
+    <span class="token keyword">private</span> <span class="token keyword">long</span> sequenceId<span class="token operator">=</span><span class="token number">0L</span><span class="token punctuation">;</span>
+    <span class="token keyword">private</span> <span class="token keyword">long</span> lastTimestamp<span class="token operator">=</span><span class="token operator">-</span><span class="token number">1L</span><span class="token punctuation">;</span>
 
-    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">synchronized</span> String <span class="hljs-title">getSnowflakeId</span><span class="hljs-params">()</span> </span>&#123;
-        <span class="hljs-keyword">long</span> time_stamp = getCurrentTimestamp();
-        <span class="hljs-comment">// <span class="hljs-doctag">TODO:</span> 优化时钟回拨错误</span>
-        <span class="hljs-keyword">if</span> ( time_stamp &lt; lastTimestamp ) &#123;
-            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> RuntimeException(
-                    String.format(<span class="hljs-string">"clock moved backward! Failed to generate Snowflake ID for %d millisecond..."</span>, lastTimestamp - time_stamp)
-            );
-        &#125;
-        <span class="hljs-comment">// 如果是同一时间生成，则序列号+1</span>
-        <span class="hljs-keyword">if</span> ( lastTimestamp == time_stamp ) &#123;
-            sequenceId = (sequenceId + <span class="hljs-number">1</span>) &amp; SEQUENCE_MASK;
-            <span class="hljs-comment">// 序列溢出</span>
-            <span class="hljs-keyword">if</span> ( sequenceId == <span class="hljs-number">0</span> ) &#123;
-                time_stamp = tilNextMillis(lastTimestamp);
-            &#125;
-        &#125; <span class="hljs-keyword">else</span> &#123;
-            <span class="hljs-comment">// 否则，从0开始</span>
-            sequenceId = <span class="hljs-number">0L</span>;
-        &#125;
-        lastTimestamp = time_stamp;
-        <span class="hljs-comment">// 往14位填充</span>
-        <span class="hljs-keyword">return</span> String.format(<span class="hljs-string">"%14s"</span>, Long.toHexString(
-                ((time_stamp - START_DATE) &lt;&lt; NUM_TIMESTAMP_ID_SHIFTS)
-                        | (workerId &lt;&lt; NUM_WORKER_ID_SHIFTS)
-                        | sequenceId)
-        ).replace(<span class="hljs-string">" "</span>, <span class="hljs-string">"0"</span>);
-    &#125;
+    <span class="token keyword">public</span> <span class="token keyword">synchronized</span> <span class="token class-name">String</span> <span class="token function">getSnowflakeId</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">long</span> time_stamp <span class="token operator">=</span> <span class="token function">getCurrentTimestamp</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// TODO: 优化时钟回拨错误</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span> time_stamp <span class="token operator">&lt;</span> lastTimestamp <span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">RuntimeException</span><span class="token punctuation">(</span>
+                    <span class="token class-name">String</span><span class="token punctuation">.</span><span class="token function">format</span><span class="token punctuation">(</span><span class="token string">"clock moved backward! Failed to generate Snowflake ID for %d millisecond..."</span><span class="token punctuation">,</span> lastTimestamp <span class="token operator">-</span> time_stamp<span class="token punctuation">)</span>
+            <span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token comment">// 如果是同一时间生成，则序列号+1</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span> lastTimestamp <span class="token operator">==</span> time_stamp <span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            sequenceId <span class="token operator">=</span> <span class="token punctuation">(</span>sequenceId <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span> SEQUENCE_MASK<span class="token punctuation">;</span>
+            <span class="token comment">// 序列溢出</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span> sequenceId <span class="token operator">==</span> <span class="token number">0</span> <span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                time_stamp <span class="token operator">=</span> <span class="token function">tilNextMillis</span><span class="token punctuation">(</span>lastTimestamp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+        <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+            <span class="token comment">// 否则，从0开始</span>
+            sequenceId <span class="token operator">=</span> <span class="token number">0L</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        lastTimestamp <span class="token operator">=</span> time_stamp<span class="token punctuation">;</span>
+        <span class="token comment">// 往14位填充</span>
+        <span class="token keyword">return</span> <span class="token class-name">String</span><span class="token punctuation">.</span><span class="token function">format</span><span class="token punctuation">(</span><span class="token string">"%14s"</span><span class="token punctuation">,</span> <span class="token class-name">Long</span><span class="token punctuation">.</span><span class="token function">toHexString</span><span class="token punctuation">(</span>
+                <span class="token punctuation">(</span><span class="token punctuation">(</span>time_stamp <span class="token operator">-</span> START_DATE<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> NUM_TIMESTAMP_ID_SHIFTS<span class="token punctuation">)</span>
+                        <span class="token operator">|</span> <span class="token punctuation">(</span>workerId <span class="token operator">&lt;&lt;</span> NUM_WORKER_ID_SHIFTS<span class="token punctuation">)</span>
+                        <span class="token operator">|</span> sequenceId<span class="token punctuation">)</span>
+        <span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">,</span> <span class="token string">"0"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
 
-    <span class="hljs-comment">/**
+    <span class="token comment">/**
      * 阻塞到下一个毫秒，直到获得新的时间戳
-     * <span class="hljs-doctag">@param</span> lastTimestamp
-     * <span class="hljs-doctag">@return</span>
+     * @param lastTimestamp
+     * @return
      */</span>
-    <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">long</span> <span class="hljs-title">tilNextMillis</span><span class="hljs-params">(<span class="hljs-keyword">long</span> lastTimestamp)</span> </span>&#123;
-        <span class="hljs-keyword">long</span> time_stamp = getCurrentTimestamp();
-        <span class="hljs-keyword">while</span> ( time_stamp &lt;= lastTimestamp ) &#123;
-            time_stamp = getCurrentTimestamp();
-        &#125;
-        <span class="hljs-keyword">return</span> time_stamp;
-    &#125;
+    <span class="token keyword">protected</span> <span class="token keyword">long</span> <span class="token function">tilNextMillis</span><span class="token punctuation">(</span><span class="token keyword">long</span> lastTimestamp<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">long</span> time_stamp <span class="token operator">=</span> <span class="token function">getCurrentTimestamp</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span> time_stamp <span class="token operator">&lt;=</span> lastTimestamp <span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            time_stamp <span class="token operator">=</span> <span class="token function">getCurrentTimestamp</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">return</span> time_stamp<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
 
-    <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">long</span> <span class="hljs-title">getCurrentTimestamp</span><span class="hljs-params">()</span> </span>&#123;
-        <span class="hljs-keyword">return</span> System.currentTimeMillis();
-    &#125;
-&#125;
-</code></pre></div>
-
+    <span class="token keyword">protected</span> <span class="token keyword">long</span> <span class="token function">getCurrentTimestamp</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">return</span> <span class="token class-name">System</span><span class="token punctuation">.</span><span class="token function">currentTimeMillis</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div>
             </div>
             <hr>
             <div>
