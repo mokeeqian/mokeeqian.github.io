@@ -16,12 +16,12 @@
   <meta name="author" content="bro_wangzai">
   <meta name="keywords" content="">
   
-    <meta name="description" content="0. 前言 在InnoDB存储引擎中，表都是根据主键顺序组织存放的，这种存储方式的表称为索引组织表（index organized table）。 在InnoDB存储引擎表中，每张表都有个主键（Primary Key），如果在创建表时没有显式地定义主键，则InnoDB存储引擎会按如下方式选择或创建主键：  首先判断表中是否有非空的唯一索引（Unique NOT NULL），如果有，则该列即为主键">
+    <meta name="description" content="0. 前言 在InnoDB存储引擎中，表都是根据主键顺序组织存放的，这种存储方式的表称为索引组织表（index organized table）。 在InnoDB存储引擎表中，每张表都有个主键（Primary Key），如果在创建表时没有显式地定义主键，则InnoDB存储引擎会按如下方式选择或创建主键：  首先判断表中是否有非空的唯一索引（Unique NOT NULL），如果有，则该列即为主">
 <meta property="og:type" content="article">
 <meta property="og:title" content="InnoDB存储引擎中的索引">
 <meta property="og:url" content="https://mokeeqian.github.io/2022/08/01/InnoDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E4%B8%AD%E7%9A%84%E7%B4%A2%E5%BC%95/index.html">
 <meta property="og:site_name" content="旺仔哥的小站">
-<meta property="og:description" content="0. 前言 在InnoDB存储引擎中，表都是根据主键顺序组织存放的，这种存储方式的表称为索引组织表（index organized table）。 在InnoDB存储引擎表中，每张表都有个主键（Primary Key），如果在创建表时没有显式地定义主键，则InnoDB存储引擎会按如下方式选择或创建主键：  首先判断表中是否有非空的唯一索引（Unique NOT NULL），如果有，则该列即为主键">
+<meta property="og:description" content="0. 前言 在InnoDB存储引擎中，表都是根据主键顺序组织存放的，这种存储方式的表称为索引组织表（index organized table）。 在InnoDB存储引擎表中，每张表都有个主键（Primary Key），如果在创建表时没有显式地定义主键，则InnoDB存储引擎会按如下方式选择或创建主键：  首先判断表中是否有非空的唯一索引（Unique NOT NULL），如果有，则该列即为主">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/jpeg/29351684/1659351643476-d531b370-5d15-46ae-b1e0-444befcf3219.jpeg">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/29351684/1659343760942-7134bf0c-ac1b-4452-86de-f10b92d18198.png#clientId=uc2bce005-9626-4&amp;crop=0&amp;crop=0&amp;crop=1&amp;crop=1&amp;from=paste&amp;height=450&amp;id=u0e0ffe97&amp;margin=%5Bobject%20Object%5D&amp;name=image.png&amp;originHeight=856&amp;originWidth=1142&amp;originalType=url&amp;ratio=1&amp;rotation=0&amp;showTitle=true&amp;size=169686&amp;status=done&amp;style=none&amp;taskId=u336d4bf8-f074-4b19-9eae-081b66a42b7&amp;title=%E8%81%9A%E9%9B%86%E7%B4%A2%E5%BC%95%E5%92%8C%E9%9D%9E%E8%81%9A%E9%9B%86%E7%B4%A2%E5%BC%95&amp;width=601">
@@ -30,7 +30,7 @@
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/jpeg/29351684/1659349959530-524c8319-c3d6-4333-aa83-e2fa03b1fdb8.jpeg#clientId=uc2bce005-9626-4&amp;crop=0&amp;crop=0&amp;crop=1&amp;crop=1&amp;from=paste&amp;height=452&amp;id=ua21a9b35&amp;margin=%5Bobject%20Object%5D&amp;name=image.png&amp;originHeight=833&amp;originWidth=1142&amp;originalType=url&amp;ratio=1&amp;rotation=0&amp;showTitle=true&amp;size=94058&amp;status=done&amp;style=none&amp;taskId=uad783a80-e5d2-465e-b13b-ddfaa2bdbe2&amp;title=%E6%97%A0%E7%B4%A2%E5%BC%95%E4%B8%8B%E6%8E%A8&amp;width=620.0000610351562">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/jpeg/29351684/1659349984973-d0255af8-758a-43d4-9437-8f102910a1ec.jpeg#clientId=uc2bce005-9626-4&amp;crop=0&amp;crop=0&amp;crop=1&amp;crop=1&amp;from=paste&amp;height=461&amp;id=u03a6278a&amp;margin=%5Bobject%20Object%5D&amp;name=image.png&amp;originHeight=856&amp;originWidth=1142&amp;originalType=url&amp;ratio=1&amp;rotation=0&amp;showTitle=true&amp;size=95952&amp;status=done&amp;style=none&amp;taskId=uad22cb43-5dea-4dea-a737-e209f12d90f&amp;title=%E6%9C%89%E7%B4%A2%E5%BC%95%E4%B8%8B%E6%8E%A8&amp;width=615">
 <meta property="article:published_time" content="2022-08-01T12:56:15.000Z">
-<meta property="article:modified_time" content="2022-08-01T13:07:37.574Z">
+<meta property="article:modified_time" content="2022-08-04T06:17:00.800Z">
 <meta property="article:author" content="bro_wangzai">
 <meta property="article:tag" content="索引">
 <meta name="twitter:card" content="summary_large_image">
@@ -253,7 +253,8 @@
             <h1 style="display: none">InnoDB存储引擎中的索引</h1>
             
             <div class="markdown-body">
-              <h1 id="0-前言"><a class="markdownIt-Anchor" href="#0-前言"></a> 0. 前言</h1>
+              <meta name="referrer" content="no-referrer" />
+<h1 id="0-前言"><a class="markdownIt-Anchor" href="#0-前言"></a> 0. 前言</h1>
 <p>在InnoDB存储引擎中，表都是根据主键顺序组织存放的，这种存储方式的表称为<strong>索引组织表</strong>（index organized table）。<br />
 在InnoDB存储引擎表中，每张表都有个主键（Primary Key），如果在创建表时没有显式地定义主键，则InnoDB存储引擎会按如下方式选择或创建主键：</p>
 <ul>

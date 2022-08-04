@@ -16,12 +16,12 @@
   <meta name="author" content="bro_wangzai">
   <meta name="keywords" content="">
   
-    <meta name="description" content="0.前言  持久化是指将数据写入持久存储，例如固态磁盘 (SSD)。Redis支持以下几种持久化方式：  RDB（Redis DataBase）：以指定的时间间隔执行数据集的时间点快照 AOF（Append Only File）：记录server收到的每个写操作命令，在重新启动时，再次执行这些命令来重建数据 RDB+AOF：重启后，AOF用于重建数据    为何要持久化？  数据放在内存，容量有">
+    <meta name="description" content="0.前言  持久化是指将数据写入持久存储，例如固态磁盘 (SSD)。Redis支持以下几种持久化方式：  RDB（Redis DataBase）：以指定的时间间隔执行数据集的时间点快照 AOF（Append Only File）：记录server收到的每个写操作命令，在重新启动时，再次执行这些命令来重建数据 RDB+AOF：重启后，AOF用于重建数据    为何要持久化？  数据放在内存，容量">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Redis持久化">
 <meta property="og:url" content="https://mokeeqian.github.io/2022/08/05/Redis%E6%8C%81%E4%B9%85%E5%8C%96/index.html">
 <meta property="og:site_name" content="旺仔哥的小站">
-<meta property="og:description" content="0.前言  持久化是指将数据写入持久存储，例如固态磁盘 (SSD)。Redis支持以下几种持久化方式：  RDB（Redis DataBase）：以指定的时间间隔执行数据集的时间点快照 AOF（Append Only File）：记录server收到的每个写操作命令，在重新启动时，再次执行这些命令来重建数据 RDB+AOF：重启后，AOF用于重建数据    为何要持久化？  数据放在内存，容量有">
+<meta property="og:description" content="0.前言  持久化是指将数据写入持久存储，例如固态磁盘 (SSD)。Redis支持以下几种持久化方式：  RDB（Redis DataBase）：以指定的时间间隔执行数据集的时间点快照 AOF（Append Only File）：记录server收到的每个写操作命令，在重新启动时，再次执行这些命令来重建数据 RDB+AOF：重启后，AOF用于重建数据    为何要持久化？  数据放在内存，容量">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/jpeg/29351684/1659588393639-11cb9146-cb2a-4907-9b0a-473d9a880e1a.jpeg">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/jpeg/29351684/1659587578748-672bbcce-16f5-402d-a03c-c40490891130.jpeg">
@@ -31,7 +31,7 @@
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/jpeg/29351684/1659589676311-9267e880-4d33-4a35-884a-a665d16ab340.jpeg#clientId=u22aea455-8f94-4&amp;crop=0&amp;crop=0&amp;crop=1&amp;crop=1&amp;from=paste&amp;height=338&amp;id=uf645d607&amp;margin=%5Bobject%20Object%5D&amp;originHeight=1080&amp;originWidth=2308&amp;originalType=url&amp;ratio=1&amp;rotation=0&amp;showTitle=true&amp;status=done&amp;style=none&amp;taskId=uad606050-7696-49ad-a51f-331b77f1107&amp;title=AOF%E9%87%8D%E5%86%99%E8%BF%87%E7%A8%8B&amp;width=723.0000610351562">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/jpeg/29351684/1659589558800-241b111b-ef95-4c21-980d-dde4737a8616.jpeg">
 <meta property="article:published_time" content="2022-08-04T16:03:15.000Z">
-<meta property="article:modified_time" content="2022-08-04T06:03:23.973Z">
+<meta property="article:modified_time" content="2022-08-04T06:16:38.556Z">
 <meta property="article:author" content="bro_wangzai">
 <meta property="article:tag" content="AOF">
 <meta property="article:tag" content="RDB">
@@ -255,7 +255,8 @@
             <h1 style="display: none">Redis持久化</h1>
             
             <div class="markdown-body">
-              <h1 id="0前言"><a class="markdownIt-Anchor" href="#0前言"></a> 0.前言</h1>
+              <meta name="referrer" content="no-referrer" />
+<h1 id="0前言"><a class="markdownIt-Anchor" href="#0前言"></a> 0.前言</h1>
 <blockquote>
 <p>持久化是指将数据写入持久存储，例如固态磁盘 (SSD)。Redis支持以下几种持久化方式：</p>
 <ul>
