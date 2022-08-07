@@ -1,0 +1,563 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="bro_wangzai">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="0.前言  如何保证Redis高可用？ 高可用HA（High Availability）是分布式系统架构设计中必须考虑的因素之一，它通常是指，通过设计减少系统不能提供服务的时间（比如server宕机、网络断联等）。 Redis主要提供一主多从下的主从复制和哨兵集群机制保证高可用。  Redis主从架构 单机的 Redis，能够承载的 QPS 大概就在上万到几万不等。对于缓存来说，一般都是用来支">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis高可用-主从复制">
+<meta property="og:url" content="https://mokeeqian.github.io/2022/08/07/Redis%E9%AB%98%E5%8F%AF%E7%94%A8-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6/index.html">
+<meta property="og:site_name" content="旺仔哥的小站">
+<meta property="og:description" content="0.前言  如何保证Redis高可用？ 高可用HA（High Availability）是分布式系统架构设计中必须考虑的因素之一，它通常是指，通过设计减少系统不能提供服务的时间（比如server宕机、网络断联等）。 Redis主要提供一主多从下的主从复制和哨兵集群机制保证高可用。  Redis主从架构 单机的 Redis，能够承载的 QPS 大概就在上万到几万不等。对于缓存来说，一般都是用来支">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/jpeg/29351684/1659797238827-959ffbe3-7fcb-4b35-bf68-d392c43383aa.jpeg">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/jpeg/29351684/1659797918729-0d449448-56f4-4fdd-aad3-5de9023ba48f.jpeg">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/jpeg/29351684/1659799559978-6b827237-2581-487b-bbf6-f3f3eaf49a2b.jpeg">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/jpeg/29351684/1659800739355-112ea4b4-967c-4abf-b0c0-acd1368b90b2.jpeg">
+<meta property="article:published_time" content="2022-08-07T02:13:15.000Z">
+<meta property="article:modified_time" content="2022-08-07T02:13:22.110Z">
+<meta property="article:author" content="bro_wangzai">
+<meta property="article:tag" content="主从复制">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2022/jpeg/29351684/1659797238827-959ffbe3-7fcb-4b35-bf68-d392c43383aa.jpeg">
+  
+  
+  <title>Redis高可用-主从复制 - 旺仔哥的小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  
+    
+    
+      
+      
+        
+          
+        
+        <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.26.0/themes/prism.min.css" />
+      
+      
+        <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.26.0/plugins/line-numbers/prism-line-numbers.min.css" />
+      
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"mokeeqian.github.io","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>旺仔哥的小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('/img/default.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="Redis高可用-主从复制">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2022-08-07 10:13" pubdate>
+        2022年8月7日 上午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      3.8k 字
+    </span>
+  
+
+  
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      32 分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Redis高可用-主从复制</h1>
+            
+            <div class="markdown-body">
+              <meta name="referrer" content="no-referrer" />
+<h1 id="0前言"><a class="markdownIt-Anchor" href="#0前言"></a> 0.前言</h1>
+<h2 id="如何保证redis高可用"><a class="markdownIt-Anchor" href="#如何保证redis高可用"></a> 如何保证Redis高可用？</h2>
+<p>高可用HA（High Availability）是分布式系统架构设计中必须考虑的因素之一，它通常是指，通过设计<strong>减少系统不能提供服务的时间</strong>（比如server宕机、网络断联等）。<br />
+Redis主要提供一主多从下的主从复制和哨兵集群机制保证高可用。</p>
+<h2 id="redis主从架构"><a class="markdownIt-Anchor" href="#redis主从架构"></a> Redis主从架构</h2>
+<p>单机的 Redis，能够承载的 QPS 大概就在上万到几万不等。对于缓存来说，一般都是用来支撑读高并发的。<br />
+因此架构做成主从(master-slave)架构，<strong>一主多从，主负责写，并且将数据复制到其它的 slave 节点，从节点负责读</strong>。所有的读请求全部走从节点。这样也可以很轻松实现水平扩容，支撑读高并发。<br />
+<img src="https://cdn.nlark.com/yuque/0/2022/jpeg/29351684/1659797238827-959ffbe3-7fcb-4b35-bf68-d392c43383aa.jpeg" srcset="/img/loading.gif" lazyload alt="" /></p>
+<h2 id="读写分离"><a class="markdownIt-Anchor" href="#读写分离"></a> 读写分离</h2>
+<p>读操作：主库、从库都可以接收；<br />
+写操作：首先到主库执行，然后，主库将写操作同步给从库</p>
+<h2 id="主从复制"><a class="markdownIt-Anchor" href="#主从复制"></a> 主从复制</h2>
+<blockquote>
+<p>主从复制，是将一台Redis服务器的数据，复制到其他的Redis服务器。前者称为主节点(master)，后者称为从节点(slave)。<br />
+数据的复制是单向的，只能由主节点到从节点。</p>
+</blockquote>
+<h3 id="作用"><a class="markdownIt-Anchor" href="#作用"></a> 作用</h3>
+<ul>
+<li><strong>数据冗余</strong>：主从复制实现了数据的热备份，是持久化之外的一种数据冗余方式</li>
+<li><strong>故障恢复</strong>：当主节点出现问题时，可以由从节点提供服务，实现快速的故障恢复；实际上是一种服务的冗余</li>
+<li><strong>负载均衡</strong>：在主从复制的基础上，配合读写分离，可以由主节点提供写服务，由从节点提供读服务（即写Redis数据时应用连接主节点，读Redis数据时应用连接从节点），分担服务器负载；尤其是在写少读多的场景下，通过多个从节点分担读负载，可以大大提高Redis服务器的并发量</li>
+<li><strong>高可用基石</strong>：除了上述作用以外，主从复制还是哨兵和集群能够实施的基础，因此说主从复制是Redis高可用的基础</li>
+</ul>
+<h1 id="1主从复制实现原理"><a class="markdownIt-Anchor" href="#1主从复制实现原理"></a> 1.主从复制实现原理</h1>
+<blockquote>
+<p>Redis在V2.8之前仅支持全量复制</p>
+</blockquote>
+<ul>
+<li>全量（同步）复制：比如在第一次同步时</li>
+<li>增量（同步）复制：只会把主从库网络断连期间主库收到的命令，同步给从库</li>
+</ul>
+<h2 id="全量复制"><a class="markdownIt-Anchor" href="#全量复制"></a> 全量复制</h2>
+<h3 id="大致过程"><a class="markdownIt-Anchor" href="#大致过程"></a> 大致过程</h3>
+<p><img src="https://cdn.nlark.com/yuque/0/2022/jpeg/29351684/1659797918729-0d449448-56f4-4fdd-aad3-5de9023ba48f.jpeg" srcset="/img/loading.gif" lazyload alt="" /></p>
+<h3 id="具体过程"><a class="markdownIt-Anchor" href="#具体过程"></a> 具体过程</h3>
+<p><img src="https://cdn.nlark.com/yuque/0/2022/jpeg/29351684/1659799559978-6b827237-2581-487b-bbf6-f3f3eaf49a2b.jpeg" srcset="/img/loading.gif" lazyload alt="" /></p>
+<p><strong>第一阶段</strong>：<br />
+主从库间建立连接、协商同步，主要是为全量复制做准备。在这一步，从库和主库建立起连接，并告诉主库即将进行同步，主库确认回复后，主从库间就可以开始同步了。<br />
+具体来说，从库给主库发送 PSYNC 命令，表示要进行数据同步，主库根据这个命令的参数来启动复制。PSYNC 命令包含了主库的 runID 和复制进度 offset 两个参数：</p>
+<ul>
+<li>runID，是每个 Redis 实例启动时都会自动生成的一个随机 ID，用来唯一标记这个实例。当从库和主库第一次复制时，因为不知道主库的 runID，所以将 runID 设为“？”；</li>
+<li>offset，此时设为 -1，表示第一次复制。</li>
+</ul>
+<p>主库收到 PSYNC 命令后，会用 FULLRESYNC 响应命令带上两个参数：主库 runID 和主库目前的复制进度 offset，返回给从库。从库收到响应后，会记录下这两个参数。这里有个地方需要注意，FULLRESYNC 响应表示第一次复制采用的全量复制，也就是说，主库会把当前所有的数据都复制给从库。<br />
+<strong>第二阶段</strong>：<br />
+主库将所有数据同步给从库。从库收到数据后，在本地完成数据加载。这个过程依赖于内存快照生成的 RDB 文件。<br />
+具体来说，主库执行 bgsave 命令，生成 RDB 文件，接着将文件发给从库。从库接收到 RDB 文件后，会先清空当前数据库，然后加载 RDB 文件。这是因为从库在通过 replicaof 命令开始和主库同步前，可能保存了其他数据。为了避免之前数据的影响，从库需要先把当前数据库清空。在主库将数据同步给从库的过程中，主库不会被阻塞，仍然可以正常接收请求。否则，Redis 的服务就被中断了。但是，这些请求中的写操作并没有记录到刚刚生成的 RDB 文件中。为了保证主从库的数据一致性，主库会在内存中用专门的 replication buffer，记录 RDB 文件生成后收到的所有写操作。<br />
+<strong>第三阶段</strong>：<br />
+主库会把第二阶段执行过程中新收到的写命令，再发送给从库。<br />
+具体的操作是，当主库完成 RDB 文件发送后，就会把此时 replication buffer 中的修改操作发给从库，从库再重新执行这些操作。这样一来，主从库就实现同步了。</p>
+<h2 id="增量复制"><a class="markdownIt-Anchor" href="#增量复制"></a> 增量复制</h2>
+<blockquote>
+<p>Redis在2.8引入了增量复制</p>
+</blockquote>
+<h3 id="为何引入增量复制"><a class="markdownIt-Anchor" href="#为何引入增量复制"></a> 为何引入增量复制？</h3>
+<p>断点续传。<br />
+如果主从库在命令传播时出现了网络闪断，那么，从库就会和主库重新进行一次全量复制，开销非常大。从 Redis 2.8 开始，网络断了之后，主从库会采用增量复制的方式继续同步。</p>
+<p><img src="https://cdn.nlark.com/yuque/0/2022/jpeg/29351684/1659800739355-112ea4b4-967c-4abf-b0c0-acd1368b90b2.jpeg" srcset="/img/loading.gif" lazyload alt="" /></p>
+<h3 id="两个缓冲区"><a class="markdownIt-Anchor" href="#两个缓冲区"></a> 两个缓冲区</h3>
+<p><strong>repl_backlog_buffer</strong>：<br />
+它是为了从库断开之后，如何找到主从差异数据而设计的环形缓冲区，从而避免全量复制带来的性能开销。如果从库断开时间太久，repl_backlog_buffer环形缓冲区被主库的写命令覆盖了，那么从库连上主库后只能乖乖地进行一次全量复制，所以repl_backlog_buffer配置尽量大一些，可以降低主从断开后全量复制的概率。<br />
+而在repl_backlog_buffer中找主从差异的数据后，如何发给从库呢？这就用到了replication buffer。<br />
+<strong>replication buffer：</strong><br />
+Redis和客户端通信也好，和从库通信也好，Redis都需要给分配一个 内存buffer进行数据交互，客户端是一个client，从库也是一个client，我们每个client连上Redis后，Redis都会分配一个client buffer，所有数据交互都是通过这个buffer进行的：Redis先把数据写到这个buffer中，然后再把buffer中的数据发到client socket中再通过网络发送出去，这样就完成了数据交互。<br />
+所以主从在增量同步时，从库作为一个client，也会分配一个buffer，只不过这个buffer专门用来传播用户的写命令到从库，保证主从数据一致，我们通常把它叫做replication buffer</p>
+<h1 id="2几点总结"><a class="markdownIt-Anchor" href="#2几点总结"></a> 2.几点总结</h1>
+<h2 id="核心机制"><a class="markdownIt-Anchor" href="#核心机制"></a> 核心机制</h2>
+<ul>
+<li>Redis 采用异步方式复制数据到 slave 节点，不过 Redis2.8 开始，slave node 会周期性地确认自己每次复制的数据量；</li>
+<li>一个 master node 是可以配置多个 slave node 的；</li>
+<li>slave node 也可以连接其他的 slave node；</li>
+<li>slave node 做复制的时候，不会 block master node 的正常工作；</li>
+<li>slave node 在做复制的时候，也不会 block 对自己的查询操作，它会用旧的数据集来提供服务；但是复制完成的时候，需要删除旧数据集，加载新数据集，这个时候就会暂停对外服务了；</li>
+<li>slave node 主要用来进行横向扩容，做读写分离，扩容的 slave node 可以提高读的吞吐量。</li>
+</ul>
+<h2 id="无磁盘复制"><a class="markdownIt-Anchor" href="#无磁盘复制"></a> 无磁盘复制</h2>
+<p>Redis 默认是磁盘复制，但是如果使用比较低速的磁盘，这种操作会给主服务器带来较大的压力。Redis从2.8.18版本开始尝试支持无磁盘的复制。使用这种设置时，子进程直接将RDB通过网络发送给从服务器，不使用磁盘作为中间存储。<br />
+master创建一个新进程直接dump RDB到slave的socket，不经过主进程，不经过硬盘。适用于disk较慢，并且网络较快的时候。</p>
+<div class="code-wrapper"><pre class="line-numbers language-none"><code class="language-none">repl-diskless-sync yes
+
+# 等待 5s 后再开始复制，因为要等更多 slave 重新连接过来
+repl-diskless-sync-delay 5<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre></div>
+<h2 id="为何全量复制用的rdb"><a class="markdownIt-Anchor" href="#为何全量复制用的rdb"></a> 为何全量复制用的RDB？</h2>
+<ul>
+<li>RDB文件内容是经过压缩的二进制数据（不同数据类型数据做了针对性优化），<strong>文件很小</strong>；而AOF文件记录的是每一次写操作的命令，写操作越多文件会变得很大，其中还包括很多对同一个key的多次冗余操作。</li>
+<li>在主从全量数据同步时，传输RDB文件可以尽量降低对主库机器网络带宽的消耗，从库在加载RDB文件时，一是文件小，读取整个文件的速度会很快，二是因为RDB文件存储的都是二进制数据，从库直接按照RDB协议解析还原数据即可，速度会非常快；而AOF需要依次重放每个写命令，这个过程会经历冗长的处理逻辑，恢复速度相比RDB会慢得多，所以使用RDB进行主从全量复制的成本最低。</li>
+<li>要使用AOF做全量复制，意味着必须打开AOF功能，打开AOF就要选择文件刷盘的策略，选择不当会严重影响Redis性能；而RDB只有在需要定时备份和主从全量复制数据时才会触发生成一次快照。</li>
+</ul>
+<h2 id="key过期处理"><a class="markdownIt-Anchor" href="#key过期处理"></a> key过期处理？</h2>
+<p>slave 不会过期 key，只会等待 master 过期 key。<br />
+如果 master 过期了一个 key，或者通过 LRU 淘汰了一个 key，那么会模拟一条 del 命令发送给 slave。</p>
+<h2 id="读写分离带来的问题"><a class="markdownIt-Anchor" href="#读写分离带来的问题"></a> 读写分离带来的问题</h2>
+<h3 id="数据不一致问题"><a class="markdownIt-Anchor" href="#数据不一致问题"></a> 数据不一致问题</h3>
+<p>由于主从复制的命令传播是异步的，延迟与数据的不一致不可避免。如果应用对数据不一致的接受程度程度较低，可能的优化措施包括：</p>
+<ul>
+<li>优化主从节点之间的网络环境（如在同机房部署）；</li>
+<li>监控主从节点延迟（通过offset）判断，如果从节点延迟过大，通知应用不再通过该从节点读取数据；</li>
+<li>使用集群同时扩展写负载和读负载等</li>
+</ul>
+<h3 id="数据过期问题"><a class="markdownIt-Anchor" href="#数据过期问题"></a> 数据过期问题</h3>
+<p>slave不会主动删除和淘汰过期的key，它只会等待master去处理。但是，如果master在定期删除+惰性删除+内存淘汰机制下，仍然没有处理到某些过期的key，那么这些过期的key在slave中会一直存在，此时clien读到的key就是过期的。</p>
+<blockquote>
+<p>Redis 3.2解决了数据过期问题。</p>
+</blockquote>
+<h3 id="故障切换问题"><a class="markdownIt-Anchor" href="#故障切换问题"></a> 故障切换问题</h3>
+<p>在没有使用哨兵的读写分离场景下，应用针对读和写分别连接不同的Redis节点；当主节点或从节点出现问题而发生更改时，需要及时修改应用程序读写Redis数据的连接；连接的切换可以手动进行，或者自己写监控程序进行切换，但前者响应慢、容易出错，后者实现复杂，成本都不算低</p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/Redis/">Redis</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6/">主从复制</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/08/06/Redis%E8%BF%87%E6%9C%9F%E7%AD%96%E7%95%A5%E5%92%8C%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0%E6%9C%BA%E5%88%B6/">
+                        <span class="hidden-mobile">Redis过期策略和内存淘汰机制</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+    
+  
+
+
+
+  
+    <script  src="https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js" ></script>
+  
+  
+    <script  src="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  
+  
+    <script  src="https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js" ></script>
+  
+  
+    <script defer src="https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js" ></script>
+  
+
+
+
+
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+        typing(title);
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

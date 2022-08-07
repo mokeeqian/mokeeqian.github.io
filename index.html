@@ -191,6 +191,100 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h1 class="index-header">
         
+        <a href="/2022/08/07/Redis%E9%AB%98%E5%8F%AF%E7%94%A8-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6/" target="_self">
+          Redis高可用-主从复制
+        </a>
+      </h1>
+
+      <p class="index-excerpt">
+        <a href="/2022/08/07/Redis%E9%AB%98%E5%8F%AF%E7%94%A8-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6/" target="_self">
+          
+          0.前言  如何保证Redis高可用？ 高可用HA（High Availability）是分布式系统架构设计中必须考虑的因素之一，它通常是指，通过设计减少系统不能提供服务的时间（比如server宕机、网络断联等）。 Redis主要提供一主多从下的主从复制和哨兵集群机制保证高可用。  Redis主从架构 单机的 Redis，能够承载的 QPS 大概就在上万到几万不等。对于缓存来说，一般都是用来支
+        </a>
+      </p>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-08-07 10:13" pubdate>
+              2022-08-07
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/Redis/">Redis</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6/">主从复制</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2022/08/06/Redis%E8%BF%87%E6%9C%9F%E7%AD%96%E7%95%A5%E5%92%8C%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0%E6%9C%BA%E5%88%B6/" target="_self">
+          Redis过期策略和内存淘汰机制
+        </a>
+      </h1>
+
+      <p class="index-excerpt">
+        <a href="/2022/08/06/Redis%E8%BF%87%E6%9C%9F%E7%AD%96%E7%95%A5%E5%92%8C%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0%E6%9C%BA%E5%88%B6/" target="_self">
+          
+          0.前言 既然Redis是内存缓存，那由于内存容量有限，不可能像文件DB那样把数据仍进去就完事了。 并且Redis里存放的多是热点数据，所以需要适时对过期的key进行清理，来释放空间；但是，在清理过后，仍然有可能还是存在大量的“废弃”key，这时候就需要内存淘汰机制来强制清理了。  过期时间 Redis支持为key设置一个生存时间TTL，在经过指定的时间后，Server会自动删除TTL&#x3D;0的k
+        </a>
+      </p>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-08-06 20:56" pubdate>
+              2022-08-06
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/Redis/">Redis</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/LRU/">LRU</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
         <a href="/2022/08/05/Redis%E6%8C%81%E4%B9%85%E5%8C%96/" target="_self">
           Redis持久化
         </a>
@@ -577,40 +671,13 @@
     </article>
   </div>
 
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2022/05/16/hello-world/" target="_self">
-          Hello World
-        </a>
-      </h1>
-
-      <p class="index-excerpt">
-        <a href="/2022/05/16/hello-world/" target="_self">
-          
-          Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.  Quic
-        </a>
-      </p>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2022-05-16 11:57" pubdate>
-              2022-05-16
-            </time>
-          </div>
-        
-        
-        
-      </div>
-    </article>
-  </div>
 
 
+  <nav aria-label="navigation">
+    <span class="pagination" id="pagination">
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/#board">2</a><a class="extend next" rel="next" href="/page/2/#board"><i class="iconfont icon-arrowright"></i></a>
+    </span>
+  </nav>
 
 
 
