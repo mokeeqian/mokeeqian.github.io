@@ -24,7 +24,7 @@
 <meta property="og:description" content="0.前言 既然Redis是内存缓存，那由于内存容量有限，不可能像文件DB那样把数据仍进去就完事了。 并且Redis里存放的多是热点数据，所以需要适时对过期的key进行清理，来释放空间；但是，在清理过后，仍然有可能还是存在大量的“废弃”key，这时候就需要内存淘汰机制来强制清理了。  过期时间 Redis支持为key设置一个生存时间TTL，在经过指定的时间后，Server会自动删除TTL&#x3D;0的k">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-08-06T12:56:15.000Z">
-<meta property="article:modified_time" content="2022-08-07T02:13:23.302Z">
+<meta property="article:modified_time" content="2022-08-07T02:32:55.189Z">
 <meta property="article:author" content="bro_wangzai">
 <meta property="article:tag" content="LRU">
 <meta name="twitter:card" content="summary_large_image">
