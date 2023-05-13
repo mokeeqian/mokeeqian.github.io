@@ -16,12 +16,12 @@
   <meta name="author" content="bro_wangzai">
   <meta name="keywords" content="">
   
-    <meta name="description" content="业务背景 为何自研路由组件？ 随着业务体量的增加，原先的库表存储已经不能支撑海量的并发请求。因此，可能需要考虑分库分表。 无论是业务之初就考虑分库分表，还是项目中期进行分库分表迁移，考虑自研数据库路由组件的出发点都是：现有的技术方案无法实现（不适合、不方便）个性化的业务需求，并且自研组件小而精，易于迭代维护，后续也可加入新的功能（例如事务支持） 分库、分表是两回事，可能只分库不分表，可能分表不分">
+    <meta name="description" content="业务背景 为何自研路由组件？ 随着业务体量的增加，原先的库表存储已经不能支撑海量的并发请求。因此，可能需要考虑分库分表。 无论是业务之初就考虑分库分表，还是项目中期进行分库分表迁移，考虑自研数据库路由组件的出发点都是：现有的技术方案无法实现（不适合、不方便）个性化的业务需求，并且自研组件小而精，易于迭代维护，后续也可加入新的功能（例如事务支持） 分库、分表是两回事，可能只分库不分表，可能分表不">
 <meta property="og:type" content="article">
 <meta property="og:title" content="数据库分库分表路由组件设计与实现">
 <meta property="og:url" content="https://mokeeqian.github.io/2023/05/13/%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E8%B7%AF%E7%94%B1%E7%BB%84%E4%BB%B6%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/index.html">
 <meta property="og:site_name" content="旺仔哥的小站">
-<meta property="og:description" content="业务背景 为何自研路由组件？ 随着业务体量的增加，原先的库表存储已经不能支撑海量的并发请求。因此，可能需要考虑分库分表。 无论是业务之初就考虑分库分表，还是项目中期进行分库分表迁移，考虑自研数据库路由组件的出发点都是：现有的技术方案无法实现（不适合、不方便）个性化的业务需求，并且自研组件小而精，易于迭代维护，后续也可加入新的功能（例如事务支持） 分库、分表是两回事，可能只分库不分表，可能分表不分">
+<meta property="og:description" content="业务背景 为何自研路由组件？ 随着业务体量的增加，原先的库表存储已经不能支撑海量的并发请求。因此，可能需要考虑分库分表。 无论是业务之初就考虑分库分表，还是项目中期进行分库分表迁移，考虑自研数据库路由组件的出发点都是：现有的技术方案无法实现（不适合、不方便）个性化的业务需求，并且自研组件小而精，易于迭代维护，后续也可加入新的功能（例如事务支持） 分库、分表是两回事，可能只分库不分表，可能分表不">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1683868422759-e51f5bdc-93c6-440f-a222-05c6887ecae5.png#averageHue=%232b2b2b&amp;clientId=u5534c067-c81b-4&amp;from=paste&amp;height=205&amp;id=u47873811&amp;originHeight=315&amp;originWidth=474&amp;originalType=url&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=uc57b09b7-9864-4bec-8f35-09d083847c8&amp;title=&amp;width=307.9829406738281">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1683868433798-1501e5cd-a545-4b25-853c-49563b05d3a8.png#averageHue=%233c3c3c&amp;clientId=u5534c067-c81b-4&amp;from=paste&amp;height=211&amp;id=ua3dd6804&amp;originHeight=267&amp;originWidth=320&amp;originalType=url&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=u59c074f1-2acd-4c02-96d7-b25044ba11a&amp;title=&amp;width=252.97726440429688">
@@ -31,7 +31,7 @@
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1683868674064-09a7741f-ef77-43c6-ba21-843a140c7384.png#averageHue=%231f1f1f&amp;clientId=u5534c067-c81b-4&amp;from=paste&amp;height=459&amp;id=ub1fd1528&amp;originHeight=636&amp;originWidth=863&amp;originalType=url&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=ub8f1269e-c99f-4440-9ba6-e73f329dafe&amp;title=&amp;width=622.1760864257812">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1683868776523-d993586d-94a9-4285-afac-2e8100de0524.png#averageHue=%231e1e1e&amp;clientId=u5534c067-c81b-4&amp;from=paste&amp;height=490&amp;id=u781d7428&amp;originHeight=661&amp;originWidth=864&amp;originalType=url&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=ud24719c9-abcb-4983-a0c0-7f505cce0d5&amp;title=&amp;width=640.1760864257812">
 <meta property="article:published_time" content="2023-05-13T04:16:24.000Z">
-<meta property="article:modified_time" content="2023-05-13T04:23:45.634Z">
+<meta property="article:modified_time" content="2023-05-13T04:27:53.901Z">
 <meta property="article:author" content="bro_wangzai">
 <meta property="article:tag" content="MySQL">
 <meta property="article:tag" content="MyBatis">
@@ -256,7 +256,8 @@
             <h1 style="display: none">数据库分库分表路由组件设计与实现</h1>
             
             <div class="markdown-body">
-              <h1 id="业务背景"><a class="markdownIt-Anchor" href="#业务背景"></a> 业务背景</h1>
+              <meta name="referrer" content="no-referrer" />
+<h1 id="业务背景"><a class="markdownIt-Anchor" href="#业务背景"></a> 业务背景</h1>
 <p>为何自研路由组件？<br />
 随着业务体量的增加，原先的库表存储已经不能支撑海量的并发请求。因此，可能需要考虑分库分表。<br />
 无论是业务之初就考虑分库分表，还是项目中期进行分库分表迁移，考虑自研数据库路由组件的出发点都是：<strong>现有的技术方案无法实现（不适合、不方便）个性化的业务需求，并且自研组件小而精，易于迭代维护，后续也可加入新的功能（例如事务支持）</strong><br />
