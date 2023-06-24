@@ -18,7 +18,7 @@
   
     <meta name="description" content="业务背景 为何自研路由组件？ 随着业务体量的增加，原先的库表存储已经不能支撑海量的并发请求。因此，可能需要考虑分库分表。 无论是业务之初就考虑分库分表，还是项目中期进行分库分表迁移，考虑自研数据库路由组件的出发点都是：现有的技术方案无法实现（不适合、不方便）个性化的业务需求，并且自研组件小而精，易于迭代维护，后续也可加入新的功能（例如事务支持） 分库、分表是两回事，可能只分库不分表，可能分表不">
 <meta property="og:type" content="article">
-<meta property="og:title" content="数据库分库分表路由组件设计与实现">
+<meta property="og:title" content="数据库路由组件设计与实现">
 <meta property="og:url" content="https://mokeeqian.github.io/2023/05/13/%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E8%B7%AF%E7%94%B1%E7%BB%84%E4%BB%B6%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/index.html">
 <meta property="og:site_name" content="旺仔哥的小站">
 <meta property="og:description" content="业务背景 为何自研路由组件？ 随着业务体量的增加，原先的库表存储已经不能支撑海量的并发请求。因此，可能需要考虑分库分表。 无论是业务之初就考虑分库分表，还是项目中期进行分库分表迁移，考虑自研数据库路由组件的出发点都是：现有的技术方案无法实现（不适合、不方便）个性化的业务需求，并且自研组件小而精，易于迭代维护，后续也可加入新的功能（例如事务支持） 分库、分表是两回事，可能只分库不分表，可能分表不">
@@ -27,11 +27,12 @@
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1683868433798-1501e5cd-a545-4b25-853c-49563b05d3a8.png#averageHue=%233c3c3c&amp;clientId=u5534c067-c81b-4&amp;from=paste&amp;height=211&amp;id=ua3dd6804&amp;originHeight=267&amp;originWidth=320&amp;originalType=url&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=u59c074f1-2acd-4c02-96d7-b25044ba11a&amp;title=&amp;width=252.97726440429688">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1683868079770-2b0d126e-cb44-429b-8e9d-7093b035ec1b.png#averageHue=%23f5eae0&amp;clientId=u5534c067-c81b-4&amp;from=paste&amp;height=306&amp;id=ud054d93c&amp;originHeight=691&amp;originWidth=710&amp;originalType=url&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;size=85260&amp;status=done&amp;style=none&amp;taskId=u6876318e-ac82-4ce8-ad7c-71dc104d055&amp;title=&amp;width=313.9829406738281">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/jpeg/29351684/1683870147946-a12a9368-e3fd-44ad-996b-b98af53f4474.jpeg">
-<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1683910558463-7c96f9a7-ef81-4557-8c1e-656846b3bf7d.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/jpeg/29351684/1687596062861-f95c89e5-5c97-4cb5-b476-78e9c8d80ded.jpeg">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1683910558463-7c96f9a7-ef81-4557-8c1e-656846b3bf7d.png#averageHue=%23ad8a49&amp;clientId=u5534c067-c81b-4&amp;from=paste&amp;height=244&amp;id=udf6dfd35&amp;originHeight=640&amp;originWidth=640&amp;originalType=binary&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;size=25340&amp;status=done&amp;style=none&amp;taskId=u00c946c1-19d1-42ac-8c68-5e0f049c3e1&amp;title=&amp;width=243.99429321289062">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1683868674064-09a7741f-ef77-43c6-ba21-843a140c7384.png#averageHue=%231f1f1f&amp;clientId=u5534c067-c81b-4&amp;from=paste&amp;height=459&amp;id=ub1fd1528&amp;originHeight=636&amp;originWidth=863&amp;originalType=url&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=ub8f1269e-c99f-4440-9ba6-e73f329dafe&amp;title=&amp;width=622.1760864257812">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1683868776523-d993586d-94a9-4285-afac-2e8100de0524.png#averageHue=%231e1e1e&amp;clientId=u5534c067-c81b-4&amp;from=paste&amp;height=490&amp;id=u781d7428&amp;originHeight=661&amp;originWidth=864&amp;originalType=url&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=ud24719c9-abcb-4983-a0c0-7f505cce0d5&amp;title=&amp;width=640.1760864257812">
 <meta property="article:published_time" content="2023-05-13T04:16:24.000Z">
-<meta property="article:modified_time" content="2023-05-13T04:27:53.901Z">
+<meta property="article:modified_time" content="2023-06-24T08:54:47.982Z">
 <meta property="article:author" content="bro_wangzai">
 <meta property="article:tag" content="MySQL">
 <meta property="article:tag" content="MyBatis">
@@ -40,7 +41,7 @@
 <meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1683868422759-e51f5bdc-93c6-440f-a222-05c6887ecae5.png#averageHue=%232b2b2b&amp;clientId=u5534c067-c81b-4&amp;from=paste&amp;height=205&amp;id=u47873811&amp;originHeight=315&amp;originWidth=474&amp;originalType=url&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=uc57b09b7-9864-4bec-8f35-09d083847c8&amp;title=&amp;width=307.9829406738281">
   
   
-  <title>数据库分库分表路由组件设计与实现 - 旺仔哥的小站</title>
+  <title>数据库路由组件设计与实现 - 旺仔哥的小站</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -194,7 +195,7 @@
       <div class="full-bg-img">
         <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
           <div class="page-header text-center fade-in-up">
-            <span class="h2" id="subtitle" title="数据库分库分表路由组件设计与实现">
+            <span class="h2" id="subtitle" title="数据库路由组件设计与实现">
               
             </span>
 
@@ -215,7 +216,7 @@
   
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      13k 字
+      14k 字
     </span>
   
 
@@ -224,7 +225,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      110 分钟
+      115 分钟
     </span>
   
 
@@ -253,7 +254,7 @@
         <div class="py-5" id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">数据库分库分表路由组件设计与实现</h1>
+            <h1 style="display: none">数据库路由组件设计与实现</h1>
             
             <div class="markdown-body">
               <meta name="referrer" content="no-referrer" />
@@ -262,6 +263,32 @@
 随着业务体量的增加，原先的库表存储已经不能支撑海量的并发请求。因此，可能需要考虑分库分表。<br />
 无论是业务之初就考虑分库分表，还是项目中期进行分库分表迁移，考虑自研数据库路由组件的出发点都是：<strong>现有的技术方案无法实现（不适合、不方便）个性化的业务需求，并且自研组件小而精，易于迭代维护，后续也可加入新的功能（例如事务支持）</strong><br />
 分库、分表是两回事，可能只分库不分表，可能分表不分库，也可能分库分表</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>分库分表前</th>
+<th>分库分表后</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>并发支撑情况</td>
+<td>MySQL 单机部署，扛不住高并发</td>
+<td>MySQL 从单机到多机，能承受的并发增加了多倍</td>
+</tr>
+<tr>
+<td>磁盘使用情况</td>
+<td>MySQL 单机磁盘容量几乎撑满</td>
+<td>拆分为多个库，数据库服务器磁盘使用率大大降低</td>
+</tr>
+<tr>
+<td>SQL 执行性能</td>
+<td>单表数据量太大，SQL 越跑越慢</td>
+<td>单表数据量减少，SQL 执行效率明显提升</td>
+</tr>
+</tbody>
+</table>
 <h2 id="水平拆分"><a class="markdownIt-Anchor" href="#水平拆分"></a> 水平拆分</h2>
 <p><img src="https://cdn.nlark.com/yuque/0/2023/png/29351684/1683868422759-e51f5bdc-93c6-440f-a222-05c6887ecae5.png#averageHue=%232b2b2b&amp;clientId=u5534c067-c81b-4&amp;from=paste&amp;height=205&amp;id=u47873811&amp;originHeight=315&amp;originWidth=474&amp;originalType=url&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=uc57b09b7-9864-4bec-8f35-09d083847c8&amp;title=&amp;width=307.9829406738281" srcset="/img/loading.gif" lazyload alt="" /></p>
 <h2 id="垂直拆分"><a class="markdownIt-Anchor" href="#垂直拆分"></a> 垂直拆分</h2>
@@ -272,18 +299,39 @@
 <p>在应用和数据中间加了一个代理层。应用程序所有的数据请求都交给代理层处理，代理层负责分离读写请求，将它们路由到对应的数据库中。<br />
 提供类似功能的中间件有 MySQL Router（官方）、Atlas（基于 MySQL Proxy）、MaxScale、MyCat。</p>
 <h2 id="基于组件"><a class="markdownIt-Anchor" href="#基于组件"></a> 基于组件</h2>
-<p>基于组件的则直接基于独立的 jar 包就可以进行开发，不用部署，运维成本低，不需要代理层的二次转发请求，性能很高**。**比较经典的就是 Sharding-JDBC</p>
-<p><img src="https://cdn.nlark.com/yuque/0/2023/png/29351684/1683868079770-2b0d126e-cb44-429b-8e9d-7093b035ec1b.png#averageHue=%23f5eae0&amp;clientId=u5534c067-c81b-4&amp;from=paste&amp;height=306&amp;id=ud054d93c&amp;originHeight=691&amp;originWidth=710&amp;originalType=url&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;size=85260&amp;status=done&amp;style=none&amp;taskId=u6876318e-ac82-4ce8-ad7c-71dc104d055&amp;title=&amp;width=313.9829406738281" srcset="/img/loading.gif" lazyload alt="image.png" /></p>
+<p>基于组件的则直接基于独立的 jar 包就可以进行开发，不用部署，运维成本低，不需要代理层的二次转发请求，性能很高**。**比较经典的就是 Sharding-JDBC<br />
+<img src="https://cdn.nlark.com/yuque/0/2023/png/29351684/1683868079770-2b0d126e-cb44-429b-8e9d-7093b035ec1b.png#averageHue=%23f5eae0&amp;clientId=u5534c067-c81b-4&amp;from=paste&amp;height=306&amp;id=ud054d93c&amp;originHeight=691&amp;originWidth=710&amp;originalType=url&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;size=85260&amp;status=done&amp;style=none&amp;taskId=u6876318e-ac82-4ce8-ad7c-71dc104d055&amp;title=&amp;width=313.9829406738281" srcset="/img/loading.gif" lazyload alt="image.png" /></p>
 <h1 id="方案设计"><a class="markdownIt-Anchor" href="#方案设计"></a> 方案设计</h1>
-<p>主要思考点在于：</p>
+<h2 id="挑战"><a class="markdownIt-Anchor" href="#挑战"></a> 挑战</h2>
+<p>:::warning</p>
+<ol>
+<li>实现层面：组件需要知道<strong>数据需要从哪个具体的数据库的子表中获取，并且对用户透明</strong></li>
+</ol>
 <ul>
-<li>如何在组件中实现动态数据源切换</li>
-<li>如何实现比较均匀的路由散列算法</li>
-<li>如何拦截并修改 SQL</li>
+<li>**数据源切换：**如何在组件中实现_动态数据源切换_</li>
+<li>**路由算法：**如何实现比较均匀的_路由散列算法_</li>
+<li>**SQL 改写：**如何_拦截并修改 SQL_</li>
 </ul>
+<ol start="2">
+<li>引入数据分片带来的问题：主要考虑<strong>跨表连接查询、跨库事务问题</strong></li>
+</ol>
+<ul>
+<li>**跨表连接查询：**通常两种方案：（1）解决跨表查询；（2）规避跨表连接，采用第三方中间件汇总查询</li>
+<li>**跨库事务：**这块也是痛点，通常有两种做法：（1）分布式事务；（2）规避分布式事务问题，采用最终一致性方案<br />
+:::</li>
+</ul>
+<blockquote>
+<p>Tips：<br />
+关于以上跨表连接查询、跨库事务具体解决方案，<em>需要根据业务场景、对于数据一致性的要求、综合性能等综合考虑</em>。<br />
+例如：</p>
+<ul>
+<li>秒杀场景下，关于库存的处理，就不太适合使用繁重的分布式事务，采用最终一致性方案（MQ+JOB兜底）比较合适；反之，对于金融等场景，考虑分布式事务比较合适</li>
+<li>对于 B 端系统的跨表查询场景，业务访问量也不会很大，考虑适配跨表连接方案代价就比较高了，相反采用 ES 汇总查询，相对来说容易接受一点</li>
+</ul>
+</blockquote>
 <h2 id="架构图"><a class="markdownIt-Anchor" href="#架构图"></a> 架构图</h2>
-<p><img src="https://cdn.nlark.com/yuque/0/2023/jpeg/29351684/1683870147946-a12a9368-e3fd-44ad-996b-b98af53f4474.jpeg" srcset="/img/loading.gif" lazyload alt="" /></p>
-<p>主要包括：</p>
+<p><img src="https://cdn.nlark.com/yuque/0/2023/jpeg/29351684/1683870147946-a12a9368-e3fd-44ad-996b-b98af53f4474.jpeg" srcset="/img/loading.gif" lazyload alt="" /><br />
+主要包括：</p>
 <ul>
 <li>AOP 切面拦截：拦截需要使用DB 路由的方法，这里采用自定义注解</li>
 <li>数据库连接池配置：分库分表需要按需配置数据库连接源，在这些连接池的集合中进行<strong>动态数据源切换</strong></li>
@@ -291,6 +339,8 @@
 <li>路由哈希算法设计：在路由设计时，需要根据分库分表字段进行路由计算，让数据均匀地分布至各个库表之中。这里参考 HashMap 的 扰动函数设计</li>
 <li>MyBatis 拦截器：实现 sql 动态拦截和修改</li>
 </ul>
+<h2 id="流程图"><a class="markdownIt-Anchor" href="#流程图"></a> 流程图</h2>
+<p><img src="https://cdn.nlark.com/yuque/0/2023/jpeg/29351684/1687596062861-f95c89e5-5c97-4cb5-b476-78e9c8d80ded.jpeg" srcset="/img/loading.gif" lazyload alt="" /></p>
 <h1 id="技术实现"><a class="markdownIt-Anchor" href="#技术实现"></a> 技术实现</h1>
 <h2 id="工程结构"><a class="markdownIt-Anchor" href="#工程结构"></a> 工程结构</h2>
 <div class="code-wrapper"><pre class="line-numbers language-none"><code class="language-none">├─src
@@ -316,8 +366,8 @@
 │                  └─middleware
 │                      └─test
 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div>
-<p><strong>代码仓库</strong></p>
-<p><a target="_blank" rel="noopener" href="https://github.com/mokeeqian/mokeeqian-spring-boot-starter/tree/main/db-router-spring-boot-starter">https://github.com/mokeeqian/mokeeqian-spring-boot-starter/tree/main/db-router-spring-boot-starter</a></p>
+<p><strong>代码仓库</strong><br />
+<a target="_blank" rel="noopener" href="https://github.com/mokeeqian/mokeeqian-spring-boot-starter/tree/main/db-router-spring-boot-starter">mokeeqian-spring-boot-starter/db-router-spring-boot-starter at main · mokeeqian/mokeeqian-spring-boot-starter</a></p>
 <h2 id="自定义路由注解"><a class="markdownIt-Anchor" href="#自定义路由注解"></a> 自定义路由注解</h2>
 <p><strong>路由注解</strong><br />
 为切面提供切点，同时获取被注解的方法入参属性中的路由字段</p>
@@ -457,9 +507,9 @@ AbstractRoutingDataSource的多数据源动态 切换的核⼼逻辑是：在程
     <span class="token punctuation">&#125;</span>
 <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div>
 <h2 id="具体路由策略"><a class="markdownIt-Anchor" href="#具体路由策略"></a> 具体路由策略</h2>
-<p>这里采用接口 <code>IDBRouterStrategy</code> ，后续可以实现该接口，进行个性化的路由策略配置</p>
-<p><img src="https://cdn.nlark.com/yuque/0/2023/png/29351684/1683910558463-7c96f9a7-ef81-4557-8c1e-656846b3bf7d.png" srcset="/img/loading.gif" lazyload alt="image.png" /></p>
-<p><strong>基于HashMap 扰动函数思想实现路由分发</strong></p>
+<p>这里采用接口 <code>IDBRouterStrategy</code> ，后续可以实现该接口，进行个性化的路由策略配置<br />
+<img src="https://cdn.nlark.com/yuque/0/2023/png/29351684/1683910558463-7c96f9a7-ef81-4557-8c1e-656846b3bf7d.png#averageHue=%23ad8a49&amp;clientId=u5534c067-c81b-4&amp;from=paste&amp;height=244&amp;id=udf6dfd35&amp;originHeight=640&amp;originWidth=640&amp;originalType=binary&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;size=25340&amp;status=done&amp;style=none&amp;taskId=u00c946c1-19d1-42ac-8c68-5e0f049c3e1&amp;title=&amp;width=243.99429321289062" srcset="/img/loading.gif" lazyload alt="image.png" /><br />
+<strong>基于HashMap 扰动函数思想实现路由分发</strong></p>
 <div class="code-wrapper"><pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@Override</span>
 <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">doRouter</span><span class="token punctuation">(</span><span class="token class-name">String</span> dbKeyAttr<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
 	<span class="token keyword">int</span> size <span class="token operator">=</span> dbRouterConfig<span class="token punctuation">.</span><span class="token function">getDbCount</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">*</span> dbRouterConfig<span class="token punctuation">.</span><span class="token function">getTbCount</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
@@ -477,12 +527,13 @@ AbstractRoutingDataSource的多数据源动态 切换的核⼼逻辑是：在程
 	logger<span class="token punctuation">.</span><span class="token function">debug</span><span class="token punctuation">(</span><span class="token string">"数据库路由 dbIdx：&#123;&#125; tbIdx：&#123;&#125;"</span><span class="token punctuation">,</span>  dbIdx<span class="token punctuation">,</span> tbIdx<span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div>
 <h2 id="动态-sql-修改"><a class="markdownIt-Anchor" href="#动态-sql-修改"></a> ✅动态 SQL 修改</h2>
-<p>基于以上，分库功能已经实现，但是，如何分表？即将<strong>逻辑 SQL</strong> 转化为 <strong>物理 SQL，</strong> 例如：</p>
-<p>逻辑SQL：<code>SELECT * FROM tb_user WHERE id = 123;</code></p>
-<p>物理SQL：<code>SELECT * FROM tb_user_01 WHERE id = 123;</code></p>
-<p><strong>一种思路是：使用 MyBatis 的 Interceptor 进行 SQL 拦截，然后动态修改 SQL</strong></p>
+<p>基于以上，分库功能已经实现，但是，如何分表？即将<strong>逻辑 SQL</strong> 转化为 **物理 SQL，**例如：<br />
+逻辑SQL：<code>SELECT * FROM tb_user WHERE id = 123;</code><br />
+物理SQL：<code>SELECT * FROM tb_user_01 WHERE id = 123;</code><br />
+<strong>一种思路是：使用 MyBatis 的 Interceptor 进行 SQL 拦截，然后动态修改 SQL</strong><br />
+<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/286476884">mybatis：自定义实现拦截器插件Interceptor</a></p>
 <ul>
-<li>@Intercepts注解：拦截器<br />
+<li>**@**Intercepts注解：拦截器<br />
 可以被拦截的四种类型：
 <ul>
 <li>Executor：拦截执行器的方法</li>
@@ -499,34 +550,14 @@ AbstractRoutingDataSource的多数据源动态 切换的核⼼逻辑是：在程
 <li>args：在方法基础上，指定方法入参参数（Java里可能存在重载，故要注意参数顺序和类型）</li>
 </ul>
 </li>
-<li>类型&amp;方法一览</li>
+<li>类型&amp;方法一览<br />
+| 拦截类型 | 拦截方法 |<br />
+| — | — |<br />
+| Executor | update、query、flushStatements、commit、rollback、getTransaction、close、isClosed |<br />
+| ParameterHandler | getParameterObject、setParameters |<br />
+| ResultHandler | handleResultSets、handleOutputParameters |<br />
+| StatementHandler | prepare、parameterize、batch、update、query |</li>
 </ul>
-<table>
-<thead>
-<tr>
-<th>拦截类型</th>
-<th>拦截方法</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Executor</td>
-<td>update、query、flushStatements、commit、rollback、getTransaction、close、isClosed</td>
-</tr>
-<tr>
-<td>ParameterHandler</td>
-<td>getParameterObject、setParameters</td>
-</tr>
-<tr>
-<td>ResultHandler</td>
-<td>handleResultSets、handleOutputParameters</td>
-</tr>
-<tr>
-<td>StatementHandler</td>
-<td>prepare、parameterize、batch、update、query</td>
-</tr>
-</tbody>
-</table>
 <p>StatementHandler 的具体方法：</p>
 <ul>
 <li>prepare: ⽤于创建⼀个具体的 Statement 对象的实现类或者是 Statement 对象</li>
@@ -761,6 +792,11 @@ field<span class="token punctuation">.</span><span class="token function">setAcc
 </ul>
 <p>这块其实可以借助 Canal 等中间件（binlog主从同步原理）来实现<br />
 <img src="https://cdn.nlark.com/yuque/0/2023/png/29351684/1683868776523-d993586d-94a9-4285-afac-2e8100de0524.png#averageHue=%231e1e1e&amp;clientId=u5534c067-c81b-4&amp;from=paste&amp;height=490&amp;id=u781d7428&amp;originHeight=661&amp;originWidth=864&amp;originalType=url&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=ud24719c9-abcb-4983-a0c0-7f505cce0d5&amp;title=&amp;width=640.1760864257812" srcset="/img/loading.gif" lazyload alt="" /></p>
+<h1 id="参考文章"><a class="markdownIt-Anchor" href="#参考文章"></a> 参考文章</h1>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://shardingsphere.apache.org/">apache shardingsphere</a></li>
+<li><a target="_blank" rel="noopener" href="https://bugstack.cn/">bugstack</a></li>
+</ul>
 
             </div>
             <hr>
