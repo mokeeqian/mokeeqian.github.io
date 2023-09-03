@@ -16,25 +16,27 @@
   <meta name="author" content="bro_wangzai">
   <meta name="keywords" content="">
   
-    <meta name="description" content="#! https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;654046456  title: NACOS学习&amp;最佳实践 date: 2023-09-03 16:03:15 tags: - NACOS - 微服务 categories: - 中间件   NACOS学习&amp;最佳实践     注册中心（服务发现）   1.1. 通讯协议 1.2. 服务注册 1.3. 心跳机制 1.">
+    <meta name="description" content="NACOS学习&amp;最佳实践     注册中心（服务发现）   1.1. 通讯协议 1.2. 服务注册 1.3. 心跳机制 1.4. 服务订阅 1.5. 服务推送  1.5.1. 推送失败重试       配置中心（配置管理）     实战   3.1. Spring Boot集成 3.2. Spring Cloud集成       1. 注册中心（服务发现）  原理   1.1. 通讯协">
 <meta property="og:type" content="article">
-<meta property="og:title" content="旺仔哥的小站">
+<meta property="og:title" content="NACOS学习&amp;最佳实践">
 <meta property="og:url" content="https://mokeeqian.github.io/2023/09/03/NACOS%E5%AD%A6%E4%B9%A0&%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/index.html">
 <meta property="og:site_name" content="旺仔哥的小站">
-<meta property="og:description" content="#! https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;654046456  title: NACOS学习&amp;最佳实践 date: 2023-09-03 16:03:15 tags: - NACOS - 微服务 categories: - 中间件   NACOS学习&amp;最佳实践     注册中心（服务发现）   1.1. 通讯协议 1.2. 服务注册 1.3. 心跳机制 1.">
+<meta property="og:description" content="NACOS学习&amp;最佳实践     注册中心（服务发现）   1.1. 通讯协议 1.2. 服务注册 1.3. 心跳机制 1.4. 服务订阅 1.5. 服务推送  1.5.1. 推送失败重试       配置中心（配置管理）     实战   3.1. Spring Boot集成 3.2. Spring Cloud集成       1. 注册中心（服务发现）  原理   1.1. 通讯协">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29351684/1681206244764-baacaa51-9a2a-4493-ad66-6193b800c36a.webp#averageHue=%23f9f6f3&amp;clientId=u04032325-f18c-4&amp;from=paste&amp;height=241&amp;id=u779ff2f7&amp;originHeight=741&amp;originWidth=1512&amp;originalType=url&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=ubcfb3054-b53a-4acd-a755-661ce147ed4&amp;title=&amp;width=492.15625">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29351684/1681221561316-a30b48cb-7186-4d45-b72b-3dffee2c819d.webp#averageHue=%23eedaa0&amp;clientId=u04032325-f18c-4&amp;from=paste&amp;height=339&amp;id=ue0cb9f97&amp;originHeight=794&amp;originWidth=1054&amp;originalType=url&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=u8a5616bb-eead-448e-b5ac-e6854bf8703&amp;title=&amp;width=450.1676025390625">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29351684/1681221781986-39e8d4d8-2c73-4b7b-aeee-3a0e3135824f.webp#averageHue=%23ddded4&amp;clientId=u04032325-f18c-4&amp;from=paste&amp;height=234&amp;id=u706e3a49&amp;originHeight=434&amp;originWidth=1054&amp;originalType=url&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=u14e7d768-0b8a-453e-9254-3cea3a2c0fb&amp;title=&amp;width=569.1676025390625">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29351684/1681221885203-62cac583-127d-4faf-ad04-4354329b3c6b.webp#averageHue=%237fa5de&amp;clientId=u04032325-f18c-4&amp;from=paste&amp;height=341&amp;id=u93955bd5&amp;originHeight=754&amp;originWidth=889&amp;originalType=url&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=uda173237-a5ef-4014-b366-a018f6768ab&amp;title=&amp;width=402.1647644042969">
-<meta property="article:published_time" content="2023-09-03T08:36:13.050Z">
-<meta property="article:modified_time" content="2023-09-03T08:50:10.234Z">
+<meta property="article:published_time" content="2023-09-03T08:03:15.000Z">
+<meta property="article:modified_time" content="2023-09-03T09:20:27.861Z">
 <meta property="article:author" content="bro_wangzai">
+<meta property="article:tag" content="NACOS">
+<meta property="article:tag" content="微服务">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29351684/1681206244764-baacaa51-9a2a-4493-ad66-6193b800c36a.webp#averageHue=%23f9f6f3&amp;clientId=u04032325-f18c-4&amp;from=paste&amp;height=241&amp;id=u779ff2f7&amp;originHeight=741&amp;originWidth=1512&amp;originalType=url&amp;ratio=1.100000023841858&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=ubcfb3054-b53a-4acd-a755-661ce147ed4&amp;title=&amp;width=492.15625">
   
   
-  <title>旺仔哥的小站</title>
+  <title>NACOS学习&amp;最佳实践 - 旺仔哥的小站</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -188,7 +190,7 @@
       <div class="full-bg-img">
         <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
           <div class="page-header text-center fade-in-up">
-            <span class="h2" id="subtitle" title="">
+            <span class="h2" id="subtitle" title="NACOS学习&amp;最佳实践">
               
             </span>
 
@@ -198,7 +200,7 @@
   
     <span class="post-meta">
       <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-      <time datetime="2023-09-03 16:36" pubdate>
+      <time datetime="2023-09-03 16:03" pubdate>
         2023年9月3日 下午
       </time>
     </span>
@@ -209,7 +211,7 @@
   
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      6.3k 字
+      6.2k 字
     </span>
   
 
@@ -218,7 +220,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      53 分钟
+      52 分钟
     </span>
   
 
@@ -247,18 +249,10 @@
         <div class="py-5" id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none"></h1>
+            <h1 style="display: none">NACOS学习&amp;最佳实践</h1>
             
             <div class="markdown-body">
-              <h2 id="httpszhuanlanzhihucomp654046456"><a class="markdownIt-Anchor" href="#httpszhuanlanzhihucomp654046456"></a> #! <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/654046456">https://zhuanlan.zhihu.com/p/654046456</a></h2>
-<h2 id="title-nacos学习最佳实践date-2023-09-03-160315tags-nacos-微服务categories-中间件"><a class="markdownIt-Anchor" href="#title-nacos学习最佳实践date-2023-09-03-160315tags-nacos-微服务categories-中间件"></a> title: NACOS学习&amp;最佳实践<br />
-date: 2023-09-03 16:03:15<br />
-tags:<br />
-- NACOS<br />
-- 微服务<br />
-categories:<br />
-- 中间件</h2>
-<meta name="referrer" content="no-referrer" />
+              <meta name="referrer" content="no-referrer" />
 <h1 id="nacos学习最佳实践"><a class="markdownIt-Anchor" href="#nacos学习最佳实践"></a> NACOS学习&amp;最佳实践</h1>
 <!-- vscode-markdown-toc -->
 <ul>
@@ -526,6 +520,22 @@ public class NacosConsumerApplication &#123;
             <div>
               <div class="post-metas mb-3">
                 
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E4%B8%AD%E9%97%B4%E4%BB%B6/">中间件</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/NACOS/">NACOS</a>
+                    
+                      <a class="hover-with-bg" href="/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/">微服务</a>
+                    
+                  </div>
                 
               </div>
               
