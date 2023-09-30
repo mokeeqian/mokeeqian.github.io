@@ -16,15 +16,17 @@
   <meta name="author" content="bro_wangzai">
   <meta name="keywords" content="">
   
-    <meta name="description" content="架构 Apache Dubbo 是一款 RPC 服务开发框架，用于解决微服务架构下的服务治理与通信问题。   服务治理控制面。服务治理控制面不是特指如注册中心类的单个具体组件，而是_对 Dubbo 治理体系的抽象表达_。控制面包含协调服务发现的注册中心、流量管控策略、Dubbo Admin 控制台等，如果采用了 Service Mesh 架构则还包含 Istio 等服务网格控制面。 Dubbo">
+    <meta name="description" content="一次RPC调用过程   架构 Apache Dubbo 是一款 RPC 服务开发框架，用于解决微服务架构下的服务治理与通信问题。   服务治理控制面。服务治理控制面不是特指如注册中心类的单个具体组件，而是_对 Dubbo 治理体系的抽象表达_。控制面包含协调服务发现的注册中心、流量管控策略、Dubbo Admin 控制台等，如果采用了 Service Mesh 架构则还包含 Istio 等服务">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Dubbo核心概念">
 <meta property="og:url" content="https://mokeeqian.github.io/2023/09/30/Dubbo%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/index.html">
 <meta property="og:site_name" content="旺仔哥的小站">
-<meta property="og:description" content="架构 Apache Dubbo 是一款 RPC 服务开发框架，用于解决微服务架构下的服务治理与通信问题。   服务治理控制面。服务治理控制面不是特指如注册中心类的单个具体组件，而是_对 Dubbo 治理体系的抽象表达_。控制面包含协调服务发现的注册中心、流量管控策略、Dubbo Admin 控制台等，如果采用了 Service Mesh 架构则还包含 Istio 等服务网格控制面。 Dubbo">
+<meta property="og:description" content="一次RPC调用过程   架构 Apache Dubbo 是一款 RPC 服务开发框架，用于解决微服务架构下的服务治理与通信问题。   服务治理控制面。服务治理控制面不是特指如注册中心类的单个具体组件，而是_对 Dubbo 治理体系的抽象表达_。控制面包含协调服务发现的注册中心、流量管控策略、Dubbo Admin 控制台等，如果采用了 Service Mesh 架构则还包含 Istio 等服务">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1696076259288-dd66bb21-8624-4b4e-8116-c9c8e69e29e4.png#averageHue=%23f2f0e7&amp;clientId=u2df81430-04ff-4&amp;from=paste&amp;height=256&amp;id=u9f79a661&amp;originHeight=448&amp;originWidth=1527&amp;originalType=binary&amp;ratio=1.75&amp;rotation=0&amp;showTitle=false&amp;size=235795&amp;status=done&amp;style=none&amp;taskId=uc7ba93bb-1fd7-4732-8ac9-aa5e3454def&amp;title=&amp;width=872.5714285714286">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1696070303110-97f8fbe2-5eda-40be-8f2e-1deb7085c2e0.png#averageHue=%238f908f&amp;clientId=u5ef2f663-8f48-4&amp;from=paste&amp;id=u42524c2c&amp;originHeight=1370&amp;originWidth=2364&amp;originalType=url&amp;ratio=1.75&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=u4c753d5d-f056-48fd-b02a-03cad1a43d4&amp;title=">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/jpeg/29351684/1696074638132-f1a84f72-959b-4007-91c9-ed9c7a151562.jpeg">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1696080158698-50d6162a-b397-4b17-b010-85d5f421c28b.png#averageHue=%23f3f3f3&amp;clientId=u2df81430-04ff-4&amp;from=paste&amp;id=uc0583b9a&amp;originHeight=2322&amp;originWidth=2869&amp;originalType=url&amp;ratio=1.75&amp;rotation=0&amp;showTitle=false&amp;size=730509&amp;status=done&amp;style=none&amp;taskId=u72a1899a-9e4f-44c6-8d53-560b0089848&amp;title=">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1696070678666-c5901772-f0f7-4068-95b3-8b6c6c6ae8d7.png#averageHue=%2315cde0&amp;clientId=u5ef2f663-8f48-4&amp;from=paste&amp;id=u76360de0&amp;originHeight=586&amp;originWidth=2416&amp;originalType=url&amp;ratio=1.75&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=uf21c831b-097f-40cd-8300-9823bdebc75&amp;title=">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1696070726930-5dd44d2b-51af-423d-aece-3bc9f8f07627.png#averageHue=%23f0fbee&amp;clientId=u5ef2f663-8f48-4&amp;from=paste&amp;height=392&amp;id=ude16cd2d&amp;originHeight=1046&amp;originWidth=1542&amp;originalType=url&amp;ratio=1.75&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=uba7417fb-c1d2-4957-ba5e-6c6571ceb48&amp;title=&amp;width=577.857177734375">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1696070809744-53405744-7aa6-4484-bb05-e7f805ff06ea.png#averageHue=%23fbfdfb&amp;clientId=u5ef2f663-8f48-4&amp;from=paste&amp;id=u1b9af672&amp;originHeight=740&amp;originWidth=2290&amp;originalType=url&amp;ratio=1.75&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=u93992374-c479-4720-b497-8f076344cfc&amp;title=">
@@ -32,11 +34,11 @@
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1696070962445-25ea2399-c54a-4188-8463-10426548cbc3.png#averageHue=%23d9f2d1&amp;clientId=u5ef2f663-8f48-4&amp;from=paste&amp;id=ua2173ae5&amp;originHeight=746&amp;originWidth=1724&amp;originalType=url&amp;ratio=1.75&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=u8c0bdc49-8c53-4337-bff4-68cd19e36e3&amp;title=">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1696070976133-ab451357-ede0-4843-913b-ea6a6232d7e0.png#averageHue=%23ecf1f7&amp;clientId=u5ef2f663-8f48-4&amp;from=paste&amp;id=u0e042a18&amp;originHeight=584&amp;originWidth=2388&amp;originalType=url&amp;ratio=1.75&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=ua91d3d7b-976c-45fa-8feb-7bc1c02770f&amp;title=">
 <meta property="article:published_time" content="2023-09-30T11:56:29.000Z">
-<meta property="article:modified_time" content="2023-09-30T12:00:22.957Z">
+<meta property="article:modified_time" content="2023-09-30T13:33:00.748Z">
 <meta property="article:author" content="bro_wangzai">
 <meta property="article:tag" content="Dubbo">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1696070303110-97f8fbe2-5eda-40be-8f2e-1deb7085c2e0.png#averageHue=%238f908f&amp;clientId=u5ef2f663-8f48-4&amp;from=paste&amp;id=u42524c2c&amp;originHeight=1370&amp;originWidth=2364&amp;originalType=url&amp;ratio=1.75&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=u4c753d5d-f056-48fd-b02a-03cad1a43d4&amp;title=">
+<meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2023/png/29351684/1696076259288-dd66bb21-8624-4b4e-8116-c9c8e69e29e4.png#averageHue=%23f2f0e7&amp;clientId=u2df81430-04ff-4&amp;from=paste&amp;height=256&amp;id=u9f79a661&amp;originHeight=448&amp;originWidth=1527&amp;originalType=binary&amp;ratio=1.75&amp;rotation=0&amp;showTitle=false&amp;size=235795&amp;status=done&amp;style=none&amp;taskId=uc7ba93bb-1fd7-4732-8ac9-aa5e3454def&amp;title=&amp;width=872.5714285714286">
   
   
   <title>Dubbo核心概念 - 旺仔哥的小站</title>
@@ -256,6 +258,8 @@
             
             <div class="markdown-body">
               <meta name="referrer" content="no-referrer"/>
+<h1 id="一次rpc调用过程"><a class="markdownIt-Anchor" href="#一次rpc调用过程"></a> 一次RPC调用过程</h1>
+<p><img src="https://cdn.nlark.com/yuque/0/2023/png/29351684/1696076259288-dd66bb21-8624-4b4e-8116-c9c8e69e29e4.png#averageHue=%23f2f0e7&amp;clientId=u2df81430-04ff-4&amp;from=paste&amp;height=256&amp;id=u9f79a661&amp;originHeight=448&amp;originWidth=1527&amp;originalType=binary&amp;ratio=1.75&amp;rotation=0&amp;showTitle=false&amp;size=235795&amp;status=done&amp;style=none&amp;taskId=uc7ba93bb-1fd7-4732-8ac9-aa5e3454def&amp;title=&amp;width=872.5714285714286" srcset="/img/loading.gif" lazyload alt="image.png" /></p>
 <h1 id="架构"><a class="markdownIt-Anchor" href="#架构"></a> 架构</h1>
 <p>Apache Dubbo 是一款 <strong>RPC 服务开发框架</strong>，用于解决微服务架构下的服务治理与通信问题。<br />
 <img src="https://cdn.nlark.com/yuque/0/2023/png/29351684/1696070303110-97f8fbe2-5eda-40be-8f2e-1deb7085c2e0.png#averageHue=%238f908f&amp;clientId=u5ef2f663-8f48-4&amp;from=paste&amp;id=u42524c2c&amp;originHeight=1370&amp;originWidth=2364&amp;originalType=url&amp;ratio=1.75&amp;rotation=0&amp;showTitle=false&amp;status=done&amp;style=none&amp;taskId=u4c753d5d-f056-48fd-b02a-03cad1a43d4&amp;title=" srcset="/img/loading.gif" lazyload alt="" /></p>
@@ -291,6 +295,8 @@
 <li>Monitor：监控中心，统计服务调用次数和调用时间为了更好的的调试，发现问题，需要监控，因此Dubbo引入了监控中心，可以对消费者和提供者进行管理。非强制依赖的管理工具</li>
 </ol>
 <p><img src="https://cdn.nlark.com/yuque/0/2023/jpeg/29351684/1696074638132-f1a84f72-959b-4007-91c9-ed9c7a151562.jpeg" srcset="/img/loading.gif" lazyload alt="" /></p>
+<h2 id="核心链路"><a class="markdownIt-Anchor" href="#核心链路"></a> 核心链路</h2>
+<p><img src="https://cdn.nlark.com/yuque/0/2023/png/29351684/1696080158698-50d6162a-b397-4b17-b010-85d5f421c28b.png#averageHue=%23f3f3f3&amp;clientId=u2df81430-04ff-4&amp;from=paste&amp;id=uc0583b9a&amp;originHeight=2322&amp;originWidth=2869&amp;originalType=url&amp;ratio=1.75&amp;rotation=0&amp;showTitle=false&amp;size=730509&amp;status=done&amp;style=none&amp;taskId=u72a1899a-9e4f-44c6-8d53-560b0089848&amp;title=" srcset="/img/loading.gif" lazyload alt="image.png" /></p>
 <h1 id="dubbo-数据面"><a class="markdownIt-Anchor" href="#dubbo-数据面"></a> Dubbo 数据面</h1>
 <p>从数据面视角，Dubbo 帮助解决了微服务实践中的以下问题：</p>
 <ul>
